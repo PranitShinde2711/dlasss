@@ -1,0 +1,130 @@
+
+
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras.preprocessing.image import ImageDataGenerator
+    from tensorflow.keras.layers import Flatten,Dense
+    from tensorflow.keras.optimizers import Adam
+    from tensorflow.keras.applications import VGG16
+    from tensorflow.keras.models import Model
+
+    dataset_dir=r"C:\Users\sumit\Downloads\caltech-101-img (1)\caltech-101-img"
+
+    dataset_gen=ImageDataGenerator(rescale=1.0/255)
+
+    batch_size=2000
+    data_gen=dataset_gen.flow_from_directory(
+        dataset_dir,
+        batch_size=batch_size,
+        target_size=(64,64),
+        class_mode='categorical'
+    )
+
+    Found 9144 images belonging to 102 classes.
+
+    x_train,y_train=data_gen[1]
+    x_test,y_test=data_gen[2]
+
+    weights_path=r"C:\Users\sumit\Downloads\vgg16_weights_tf_dim_ordering_tf_kernels_notop (1).h5"
+    base_model=VGG16(weights=weights_path,include_top=False,input_shape=(64,64,3))
+
+    for layer in base_model.layers:
+        layer.trainable=False
+
+    x=Flatten()(base_model.output)
+    x=Dense(64,activation='relu')(x)
+    predictions=Dense(102,activation='softmax')(x)
+
+    model=Model(inputs=base_model.input,outputs=predictions)
+
+    model.compile(optimizer='adam',loss='categorical_crossentropy',metrics=['accuracy'])
+    model.fit(x_train,y_train,batch_size=64,epochs=10,validation_data=(x_test,y_test))
+
+    Epoch 1/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 36s 1s/step - accuracy: 0.1413 - loss: 4.2239 - val_accuracy: 0.2910 - val_loss: 3.4021
+    Epoch 2/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 39s 1s/step - accuracy: 0.3608 - loss: 3.0098 - val_accuracy: 0.3630 - val_loss: 2.9856
+    Epoch 3/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 39s 1s/step - accuracy: 0.4471 - loss: 2.5321 - val_accuracy: 0.4315 - val_loss: 2.6947
+    Epoch 4/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 38s 1s/step - accuracy: 0.5065 - loss: 2.1881 - val_accuracy: 0.4700 - val_loss: 2.4455
+    Epoch 5/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 38s 1s/step - accuracy: 0.5835 - loss: 1.8630 - val_accuracy: 0.5075 - val_loss: 2.2581
+    Epoch 6/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 39s 1s/step - accuracy: 0.6550 - loss: 1.6002 - val_accuracy: 0.5220 - val_loss: 2.1613
+    Epoch 7/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 33s 1s/step - accuracy: 0.6949 - loss: 1.4281 - val_accuracy: 0.5365 - val_loss: 2.0542
+    Epoch 8/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 33s 1s/step - accuracy: 0.7452 - loss: 1.2269 - val_accuracy: 0.5500 - val_loss: 1.9749
+    Epoch 9/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 31s 986ms/step - accuracy: 0.7774 - loss: 1.0737 - val_accuracy: 0.5600 - val_loss: 1.9350
+    Epoch 10/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 33s 1s/step - accuracy: 0.7859 - loss: 1.0090 - val_accuracy: 0.5625 - val_loss: 1.8753
+
+    <keras.src.callbacks.history.History at 0x1b6f8e90f80>
+
+    #fine tune the hyperparameters
+    base_model=VGG16(weights=weights_path,include_top=False,input_shape=(64,64,3))
+    for layer in base_model.layers:
+        layer.trainable=False
+    for layer in base_model.layers[len(base_model.layers)-2:]:
+        layer.trainable=True
+
+    x=Flatten()(base_model.output)
+    x=Dense(512,activation='relu')(x)
+    x=tf.keras.layers.Dropout(0.3)(x)
+    predictions=Dense(102,activation='softmax')(x)
+        
+
+    model=Model(inputs=base_model.input,outputs=predictions)
+    model.compile(optimizer='adam',loss='categorical_crossentropy',metrics=['accuracy'])
+    model.fit(x_train,y_train,batch_size=64,epochs=10,validation_data=(x_test,y_test))
+
+    Epoch 1/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 35s 1s/step - accuracy: 0.2859 - loss: 3.6364 - val_accuracy: 0.4640 - val_loss: 2.4885
+    Epoch 2/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 35s 1s/step - accuracy: 0.5628 - loss: 1.8981 - val_accuracy: 0.5430 - val_loss: 2.0107
+    Epoch 3/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 33s 1s/step - accuracy: 0.6839 - loss: 1.3096 - val_accuracy: 0.5680 - val_loss: 1.8272
+    Epoch 4/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 33s 1s/step - accuracy: 0.7971 - loss: 0.7544 - val_accuracy: 0.5980 - val_loss: 1.7278
+    Epoch 5/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 32s 1s/step - accuracy: 0.8663 - loss: 0.5129 - val_accuracy: 0.6045 - val_loss: 1.6924
+    Epoch 6/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 34s 1s/step - accuracy: 0.9131 - loss: 0.3500 - val_accuracy: 0.6155 - val_loss: 1.8037
+    Epoch 7/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 33s 1s/step - accuracy: 0.9459 - loss: 0.1825 - val_accuracy: 0.6250 - val_loss: 1.8657
+    Epoch 8/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 33s 1s/step - accuracy: 0.9767 - loss: 0.0869 - val_accuracy: 0.6150 - val_loss: 1.9332
+    Epoch 9/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 31s 996ms/step - accuracy: 0.9828 - loss: 0.0853 - val_accuracy: 0.6280 - val_loss: 1.8370
+    Epoch 10/10
+    32/32 ━━━━━━━━━━━━━━━━━━━━ 33s 1s/step - accuracy: 0.9891 - loss: 0.0489 - val_accuracy: 0.6440 - val_loss: 1.9022
+
+    <keras.src.callbacks.history.History at 0x1b69e23bce0>
+
+    loss,acc=model.evaluate(x_test,y_test)
+
+    63/63 ━━━━━━━━━━━━━━━━━━━━ 13s 201ms/step - accuracy: 0.6394 - loss: 1.9435
+
+    print(acc)
+    print(loss)
+
+    0.6439999938011169
+    1.9021849632263184
+
+    import matplotlib.pyplot as plt
+    labels=list(data_gen.class_indices.keys())
+    import numpy as np
+    pred=model.predict(x_test)
+    n=1
+    plt.imshow(x_test[n])
+    print("actual:",labels[np.argmax(y_test[n])])
+    print("predicted:",labels[np.argmax(pred[n])])
+          
+
+    63/63 ━━━━━━━━━━━━━━━━━━━━ 18s 279ms/step
+    actual: Faces
+    predicted: Faces
+
+[]

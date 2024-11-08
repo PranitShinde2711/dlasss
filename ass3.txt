@@ -1,0 +1,97 @@
+
+
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras.preprocessing.image import ImageDataGenerator
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    train_dir=r"C:\Users\sumit\Downloads\mnist-jpg\mnist-jpg\train"
+    test_dir=r"C:\Users\sumit\Downloads\mnist-jpg\mnist-jpg\test"
+
+    train_gen=ImageDataGenerator(rescale=1.0/255)
+    test_gen=ImageDataGenerator(rescale=1.0/255)
+
+    training_gen=train_gen.flow_from_directory(
+        train_dir,
+        batch_size=10000,
+        target_size=(28,28),
+        class_mode='categorical',
+        color_mode='grayscale'
+        
+    )
+
+    testing_gen=test_gen.flow_from_directory(
+        test_dir,
+        batch_size=2000,
+        target_size=(28,28),
+        class_mode='categorical',
+        color_mode='grayscale'
+        
+    )
+
+    Found 60000 images belonging to 10 classes.
+    Found 10000 images belonging to 10 classes.
+
+    x_train,y_train=training_gen[0]
+    x_test,y_test=testing_gen[0]
+
+    from tensorflow.keras import models
+    from tensorflow.keras import layers
+
+    model=models.Sequential()
+    model.add(layers.Conv2D(32,(3,3),activation='relu',input_shape=(28,28,1)))
+    model.add(layers.MaxPooling2D(2,2))
+    model.add(layers.Flatten())
+    model.add(layers.Dense(64,activation='relu'))
+    model.add(layers.Dense(10,activation='softmax'))
+
+    model.compile(optimizer='adam',loss='categorical_crossentropy',metrics=['accuracy'])
+
+    model.fit(x_train,y_train,epochs=10,batch_size=64,validation_data=(x_test,y_test))
+
+    Epoch 1/10
+    157/157 ━━━━━━━━━━━━━━━━━━━━ 3s 11ms/step - accuracy: 0.7132 - loss: 0.9595 - val_accuracy: 0.9240 - val_loss: 0.2805
+    Epoch 2/10
+    157/157 ━━━━━━━━━━━━━━━━━━━━ 1s 9ms/step - accuracy: 0.9304 - loss: 0.2329 - val_accuracy: 0.9465 - val_loss: 0.1923
+    Epoch 3/10
+    157/157 ━━━━━━━━━━━━━━━━━━━━ 1s 9ms/step - accuracy: 0.9571 - loss: 0.1527 - val_accuracy: 0.9595 - val_loss: 0.1395
+    Epoch 4/10
+    157/157 ━━━━━━━━━━━━━━━━━━━━ 2s 10ms/step - accuracy: 0.9735 - loss: 0.1029 - val_accuracy: 0.9605 - val_loss: 0.1338
+    Epoch 5/10
+    157/157 ━━━━━━━━━━━━━━━━━━━━ 2s 9ms/step - accuracy: 0.9780 - loss: 0.0769 - val_accuracy: 0.9665 - val_loss: 0.1053
+    Epoch 6/10
+    157/157 ━━━━━━━━━━━━━━━━━━━━ 1s 9ms/step - accuracy: 0.9857 - loss: 0.0557 - val_accuracy: 0.9685 - val_loss: 0.0962
+    Epoch 7/10
+    157/157 ━━━━━━━━━━━━━━━━━━━━ 1s 9ms/step - accuracy: 0.9896 - loss: 0.0393 - val_accuracy: 0.9715 - val_loss: 0.0909
+    Epoch 8/10
+    157/157 ━━━━━━━━━━━━━━━━━━━━ 1s 9ms/step - accuracy: 0.9937 - loss: 0.0278 - val_accuracy: 0.9695 - val_loss: 0.0995
+    Epoch 9/10
+    157/157 ━━━━━━━━━━━━━━━━━━━━ 1s 9ms/step - accuracy: 0.9953 - loss: 0.0225 - val_accuracy: 0.9740 - val_loss: 0.0903
+    Epoch 10/10
+    157/157 ━━━━━━━━━━━━━━━━━━━━ 1s 9ms/step - accuracy: 0.9982 - loss: 0.0162 - val_accuracy: 0.9700 - val_loss: 0.1012
+
+    <keras.src.callbacks.history.History at 0x28ac19edd30>
+
+    loss,acc=model.evaluate(x_test,y_test)
+    print("Accuracy:",acc,"    ","loss:",loss)
+
+    63/63 ━━━━━━━━━━━━━━━━━━━━ 0s 2ms/step - accuracy: 0.9727 - loss: 0.0892
+    Accuracy: 0.9700000286102295      loss: 0.10122691839933395
+
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    n=7
+    pred=model.predict(x_test)
+    print("Actual number:",np.argmax(y_test[n]))
+    print("predicted Number:",np.argmax(pred[n]))
+    plt.imshow(x_test[n])
+
+    63/63 ━━━━━━━━━━━━━━━━━━━━ 0s 2ms/step
+    Actual number: 0
+    predicted Number: 0
+
+    <matplotlib.image.AxesImage at 0x28acc6a46b0>
+
+[]

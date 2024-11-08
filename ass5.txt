@@ -1,0 +1,64 @@
+
+
+    import numpy as np
+    import re
+    from tensorflow.keras.preprocessing.text import Tokenizer
+    from tensorflow.keras.models import Sequential
+    from tensorflow.keras.layers import Embedding, Dense, Lambda
+    import tensorflow as tf
+
+    # Sample data
+    data = "Deep learning is a part of machine learning. Learning can be supervised or unsupervised."
+
+    # Preprocessing text
+    sentences = re.sub('[^A-Za-z0-9 ]+', '', data.lower()).split('.')
+    tokenizer = Tokenizer()
+    tokenizer.fit_on_texts(sentences)
+    sequences = tokenizer.texts_to_sequences(sentences)
+
+    # Building vocabulary mappings
+    word_index = tokenizer.word_index
+    index_to_word = {idx: word for word, idx in word_index.items()}
+    vocab_size = len(word_index) + 1  # Plus 1 for padding
+
+    # Generating training data (contexts and targets)
+    context_size = 2
+    contexts = []
+    targets = []
+
+    for sequence in sequences:
+        for i in range(context_size, len(sequence) - context_size):
+            # Define context words (before and after target)
+            context = [
+                sequence[i - 2], sequence[i - 1], sequence[i + 1], sequence[i + 2]
+            ]
+            contexts.append(context)
+            targets.append(sequence[i])
+
+    # Convert contexts and targets to numpy arrays with integer dtype
+    X = np.array(contexts, dtype=np.int32)
+    Y = np.array(targets, dtype=np.int32).reshape(-1, 1)  # Reshaping to (samples, 1)
+
+    # Define and compile CBOW model
+    model = Sequential([
+        Embedding(input_dim=vocab_size, output_dim=8, input_length=4),
+        Lambda(lambda x: tf.reduce_mean(x, axis=1)),
+        Dense(vocab_size, activation='softmax')
+    ])
+
+    # Compile the model
+    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+    # Train the model
+    model.fit(X, Y, epochs=50, verbose=0)
+
+    <keras.src.callbacks.history.History at 0x1d581ed3fb0>
+
+    test_context = ["deep", "learning", "supervised", "unsupervised"]
+    test_seq = [word_index[word] for word in test_context if word in word_index]
+    pred = model.predict(np.array([test_seq]))
+    pred_word = index_to_word[np.argmax(pred)]
+    print("Predicted target word for context", test_context, "is:", pred_word)
+
+    1/1 ━━━━━━━━━━━━━━━━━━━━ 0s 65ms/step
+    Predicted target word for context ['deep', 'learning', 'supervised', 'unsupervised'] is: can

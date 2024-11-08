@@ -1,0 +1,98 @@
+
+
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+    train_dir=r"C:\Users\sumit\Downloads\mnist-jpg\mnist-jpg\train"
+    test_dir=r"C:\Users\sumit\Downloads\mnist-jpg\mnist-jpg\test"
+
+    data_gen=ImageDataGenerator(rescale=1.0/255)
+
+    batch_size=10000
+    train_data_gen=data_gen.flow_from_directory(
+        train_dir,
+        target_size=(64,64),
+        batch_size=batch_size,
+        class_mode='categorical',
+        shuffle=True,
+        color_mode='grayscale'
+        
+    )
+
+    Found 60000 images belonging to 10 classes.
+
+    batch_size=2000
+    test_data_gen=data_gen.flow_from_directory(
+        test_dir,
+        target_size=(64,64),
+        batch_size=batch_size,
+        class_mode='categorical',
+        shuffle=True,
+        color_mode='grayscale'
+        
+    )
+
+    Found 10000 images belonging to 10 classes.
+
+    x_train,y_train=train_data_gen[0]
+    x_test,y_test=test_data_gen[0]
+
+    model=keras.Sequential([
+        keras.layers.Flatten(input_shape=(64,64,1)),
+        keras.layers.Dense(128,activation='relu'),
+        keras.layers.Dense(10,activation='softmax')
+    ])
+
+    C:\Users\sumit\AppData\Roaming\Python\Python312\site-packages\keras\src\layers\reshaping\flatten.py:37: UserWarning: Do not pass an `input_shape`/`input_dim` argument to a layer. When using Sequential models, prefer using an `Input(shape)` object as the first layer in the model instead.
+      super().__init__(**kwargs)
+
+    model.compile(optimizer="sgd",loss="categorical_crossentropy",metrics=['accuracy'])
+    model.fit(x_train,y_train,epochs=10,validation_data=(x_test,y_test))
+
+    Epoch 1/10
+    313/313 ━━━━━━━━━━━━━━━━━━━━ 2s 3ms/step - accuracy: 0.6607 - loss: 1.2297 - val_accuracy: 0.8860 - val_loss: 0.4408
+    Epoch 2/10
+    313/313 ━━━━━━━━━━━━━━━━━━━━ 1s 3ms/step - accuracy: 0.8844 - loss: 0.4308 - val_accuracy: 0.9020 - val_loss: 0.3573
+    Epoch 3/10
+    313/313 ━━━━━━━━━━━━━━━━━━━━ 1s 3ms/step - accuracy: 0.9036 - loss: 0.3551 - val_accuracy: 0.9050 - val_loss: 0.3195
+    Epoch 4/10
+    313/313 ━━━━━━━━━━━━━━━━━━━━ 1s 3ms/step - accuracy: 0.9156 - loss: 0.3059 - val_accuracy: 0.9100 - val_loss: 0.3006
+    Epoch 5/10
+    313/313 ━━━━━━━━━━━━━━━━━━━━ 1s 3ms/step - accuracy: 0.9200 - loss: 0.2829 - val_accuracy: 0.9205 - val_loss: 0.2787
+    Epoch 6/10
+    313/313 ━━━━━━━━━━━━━━━━━━━━ 1s 3ms/step - accuracy: 0.9262 - loss: 0.2714 - val_accuracy: 0.9195 - val_loss: 0.2735
+    Epoch 7/10
+    313/313 ━━━━━━━━━━━━━━━━━━━━ 1s 3ms/step - accuracy: 0.9332 - loss: 0.2340 - val_accuracy: 0.9205 - val_loss: 0.2639
+    Epoch 8/10
+    313/313 ━━━━━━━━━━━━━━━━━━━━ 1s 3ms/step - accuracy: 0.9432 - loss: 0.2214 - val_accuracy: 0.9275 - val_loss: 0.2494
+    Epoch 9/10
+    313/313 ━━━━━━━━━━━━━━━━━━━━ 1s 3ms/step - accuracy: 0.9407 - loss: 0.2145 - val_accuracy: 0.9315 - val_loss: 0.2355
+    Epoch 10/10
+    313/313 ━━━━━━━━━━━━━━━━━━━━ 1s 3ms/step - accuracy: 0.9462 - loss: 0.1972 - val_accuracy: 0.9345 - val_loss: 0.2277
+
+    <keras.src.callbacks.history.History at 0x1d2cbe3ee10>
+
+    pred=model.predict(x_test)
+    loss,acc=model.evaluate(x_test,y_test)
+    print("loss:",loss,"      ","Accuracy:",acc)
+
+    63/63 ━━━━━━━━━━━━━━━━━━━━ 0s 2ms/step
+    63/63 ━━━━━━━━━━━━━━━━━━━━ 0s 2ms/step - accuracy: 0.9363 - loss: 0.2263
+    loss: 0.22766993939876556        Accuracy: 0.934499979019165
+
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    n=400
+    print("Actual number:",np.argmax(y_test[n]))
+    print("predicted number:",np.argmax(pred[n]))
+
+    Actual number: 3
+    predicted number: 3
+
+    plt.imshow(x_test[n])
+
+    <matplotlib.image.AxesImage at 0x1d2deb44f20>
+
+[]
